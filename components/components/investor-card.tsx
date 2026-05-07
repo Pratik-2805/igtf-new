@@ -23,12 +23,12 @@ export function InvestorCard({ investor }: InvestorCardProps) {
       <div className="p-8 flex flex-col h-full">
         <div className="flex items-start gap-8">
           {/* Larger Logo Section */}
-          <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden shadow-2xl border border-gray-100 flex-shrink-0 bg-white flex items-center justify-center p-2.5 transition-transform duration-500 group-hover:scale-105">
+          <div className="relative w-32 h-32 rounded-[2rem] overflow-hidden shadow-2xl border border-gray-100 flex-shrink-0 bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
             {investor.image ? (
               <img 
                 src={investor.image} 
                 alt={investor.name} 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full w-full bg-blue-50/50">
@@ -75,7 +75,7 @@ export function InvestorCard({ investor }: InvestorCardProps) {
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1">
                 <Briefcase size={10} /> Profile
               </p>
-              <p className="text-sm font-bold text-gray-700 tracking-tight">{investor.experience}</p>
+              <p className="text-sm font-bold text-gray-700 tracking-tight">{investor.experience?.replace(/\s*\d+\s*months?/, '').trim()}</p>
            </div>
         </div>
 

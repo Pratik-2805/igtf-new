@@ -7,7 +7,7 @@ interface User {
     id: number;
     name: string;
     email: string;
-    role: "admin" | "manager" | "sales"; // ADMIN ADDED
+    role: "admin" | "manager" | "sales" | "executive"; // ADMIN ADDED
     status?: "active" | "inactive";
 }
 

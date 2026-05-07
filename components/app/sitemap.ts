@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let franchiseRoutes: MetadataRoute.Sitemap = [];
   try {
     const nfisSourcePlatforms = encodeURIComponent('NFIS,nfis.in');
-    const res = await fetch(`${apiUrl}/api/exhibitor-registrations/?source_platform=${nfisSourcePlatforms}`);
+    const res = await fetch(`${apiUrl}/api/franchisor-registrations/?source_platform=${nfisSourcePlatforms}`);
     if (res.ok) {
       const data = await res.json();
       const results = data.results || data;

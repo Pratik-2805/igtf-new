@@ -310,13 +310,13 @@ export default function AboutPage() {
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <a
-                href="/register"
+                href="/register?type=franchisor"
                 className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105"
               >
                 Book Exhibition Stall
               </a>
               <a
-                href="/register"
+                href="/register?type=visitor"
                 className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-all duration-200"
               >
                 Register as Visitor

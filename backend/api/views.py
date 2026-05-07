@@ -1449,6 +1449,7 @@ def register_user(request):
             email_address=email,
             phone_number=phone_number,
             company_name=request.data.get("company_name", "N/A"),
+            event_name=request.data.get("event_name"),
             event_location=request.data.get("preferred_location", request.data.get("event_location", "N/A")),
             industry_interest=parsed_sector,
             franchisor_interest=parsed_franchisors,

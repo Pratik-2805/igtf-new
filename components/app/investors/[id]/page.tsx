@@ -59,7 +59,7 @@ export default async function InvestorDetailPage({ params }: InvestorDetailPageP
     location: item.preferred_location || 'Pan India',
     investmentCapacity: item.investment_budget || item.investment_capacity || 'Not Specified',
     preferredIndustries: (item.interested_sector || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-    experience: item.business_experience || 'Industry Professional',
+    experience: (item.business_experience || 'Industry Professional').replace(/\s*\d+\s*months?/, '').trim(),
     companiesFinanced: item.companies_financed || '0',
     about: item.about || '',
     image: item.logo || '',
@@ -135,7 +135,7 @@ export default async function InvestorDetailPage({ params }: InvestorDetailPageP
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Professional Experience</p>
-                  <p className="text-xl font-black text-gray-900">{investor.experience} Years</p>
+                  <p className="text-xl font-black text-gray-900">{investor.experience}</p>
                 </div>
               </div>
             </div>
@@ -152,28 +152,28 @@ export default async function InvestorDetailPage({ params }: InvestorDetailPageP
                   Investment Profile
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                   <div className="flex items-center gap-5">
+                <div className="flex flex-col md:flex-row flex-wrap items-start gap-10 md:gap-x-16 md:gap-y-8">
+                   <div className="flex items-center gap-4 min-w-fit">
                       <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
                          <IndianRupee className="text-blue-700" size={24} />
                       </div>
                       <div>
                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Portfolio Capacity</p>
-                         <p className="text-lg font-black text-gray-900 tracking-tight">{investor.investmentCapacity}</p>
+                         <p className="text-lg font-black text-gray-900 tracking-tight whitespace-nowrap">{investor.investmentCapacity}</p>
                       </div>
                    </div>
                    
-                   <div className="flex items-center gap-5">
+                   <div className="flex items-center gap-4 min-w-fit">
                       <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
                          <Briefcase className="text-blue-700" size={24} />
                       </div>
                       <div>
                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Strategic Experience</p>
-                         <p className="text-lg font-black text-gray-900 tracking-tight">{investor.experience} Years</p>
+                         <p className="text-lg font-black text-gray-900 tracking-tight">{investor.experience}</p>
                       </div>
                    </div>
 
-                   <div className="flex items-center gap-5">
+                   <div className="flex items-center gap-4 min-w-fit">
                       <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
                          <Users className="text-blue-700" size={24} />
                       </div>

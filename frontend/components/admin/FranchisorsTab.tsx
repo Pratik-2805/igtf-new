@@ -101,7 +101,7 @@ export default function FranchisorsTab({
   }
 
   // --- UI Helpers ---
-  const getStatusColor = (status: franchisorRegistration["status"]) => {
+  const getStatusColor = (status: FranchisorRegistration["status"]) => {
     switch (status) {
       case "paid":
         return "bg-green-500/10 border-green-500 text-green-700";
@@ -116,7 +116,7 @@ export default function FranchisorsTab({
     }
   };
 
-  const getStatusBadgeColor = (status: franchisorRegistration["status"]) => {
+  const getStatusBadgeColor = (status: FranchisorRegistration["status"]) => {
     switch (status) {
       case "paid":
         return "bg-green-500 text-white";
@@ -136,11 +136,11 @@ export default function FranchisorsTab({
   const filteredfranchisors = safeList.filter((v) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
-      (v.full_name || "").toLowerCase().includes(q) ||
-      (v.firm_name || "").toLowerCase().includes(q) ||
-      (v.email || "").toLowerCase().includes(q) ||
-      (v.phone_number || "").toLowerCase().includes(q) ||
-      (v.interested_sector || "").toLowerCase().includes(q);
+      (v.company_name || "").toLowerCase().includes(q) ||
+      (v.contact_person_name || "").toLowerCase().includes(q) ||
+      (v.email_address || "").toLowerCase().includes(q) ||
+      (v.contact_number || "").toLowerCase().includes(q) ||
+      (v.industry || "").toLowerCase().includes(q);
 
     const matchesFilter = filterStatus === "all" || v.status === filterStatus;
 

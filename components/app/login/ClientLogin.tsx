@@ -22,87 +22,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
 
-  // ─── 3-STAGE AUTH CHECK ──────────────────────────────────────────────────
+  // ─── CLEAR ALL STALE SESSION DATA ON MOUNT ───────────────────────────────
+  // We never auto-login from saved cookies/localStorage.
+  // Every visit to /login requires a fresh sign-in via email & password.
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("access_token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      const clearSession = () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user_role");
-        localStorage.removeItem("user_name");
-        localStorage.removeItem("company_name");
-        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        window.dispatchEvent(new Event("auth-change"));
-      };
-
-      // Stage 1: Check Local Token + Backend Verification
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          if (payload.exp * 1000 > Date.now()) {
-            // Token locally valid - but is the user still in the DB?
-            const meRes = await fetch(`${API_URL}/api/me/`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (meRes.ok) {
-              document.cookie = `access_token=${token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
-              const role = localStorage.getItem("user_role") || payload.role || payload.user_role;
-              redirectToDashboard(role);
-              return;
-            } else {
-              // User likely deleted or token revoked
-              clearSession();
-            }
-          }
-        } catch (e) {
-          console.error("Token decode or verification failed", e);
-          clearSession();
-        }
-      }
-
-      // Stage 2: Silent Refresh (HttpOnly Cookie)
-      try {
-        const res = await fetch(`${API_URL}/api/token/refresh-cookie/`, {
-          method: "POST",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.access) {
-            // Verify the new token too
-            const meRes = await fetch(`${API_URL}/api/me/`, {
-              headers: { Authorization: `Bearer ${data.access}` }
-            });
-            
-            if (meRes.ok) {
-              const meData = await meRes.json();
-              localStorage.setItem("access_token", data.access);
-              localStorage.setItem("user_role", meData.role);
-              localStorage.setItem("user_name", meData.name || meData.username);
-              document.cookie = `access_token=${data.access}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
-              window.dispatchEvent(new Event("auth-change"));
-              redirectToDashboard(meData.role);
-              return;
-            } else {
-              clearSession();
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Silent refresh failed", e);
-      }
-
-      // Stage 3: No valid session - show login form
-      setIsChecking(false);
-    };
-
-    checkAuth();
+    // Clear localStorage tokens
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user_name");
+    localStorage.removeItem("company_name");
+    // Clear the access_token cookie read by the middleware
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+    window.dispatchEvent(new Event("auth-change"));
   }, []);
 
   const redirectToDashboard = (role: string) => {
@@ -210,9 +143,6 @@ export default function LoginPage() {
     }
   };
 
-  if (isChecking) {
-    return <LoadingScreen />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import NextImage from 'next/image';
-import { RefreshCw, Save, Upload, Camera, X, AlertCircle } from 'lucide-react';
+import { RefreshCw, Save, Upload, Camera, X, AlertCircle, Briefcase } from 'lucide-react';
 import Cropper, { Area } from 'react-easy-crop';
 import { toast } from 'sonner';
 import { authFetch, authFetchForm } from '@/lib/authFetch';
@@ -75,6 +75,7 @@ export default function FranchisorDashboard() {
   const [profile, setProfile] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [noProfile, setNoProfile] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -186,8 +187,8 @@ export default function FranchisorDashboard() {
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setSaving(true);
     const profileId = profile.id;
     if (!profileId) { toast.error('No profile ID found'); setSaving(false); return; }
@@ -217,6 +218,7 @@ export default function FranchisorDashboard() {
       if (res.ok) {
         const updated = await res.json();
         setProfile(prev => ({ ...prev, ...updated }));
+        setIsEditing(false);
         toast.success('Changes saved successfully');
       } else {
         const errorData = await res.json();
@@ -285,22 +287,22 @@ export default function FranchisorDashboard() {
                     <span className="text-xs font-bold mt-2 uppercase tracking-tighter">No Logo</span>
                   </div>
                 )}
-                <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                <label className={`absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 ${isEditing ? 'group-hover:opacity-100 cursor-pointer' : 'cursor-not-allowed'} transition-opacity duration-300`}>
                   <Camera className="text-white mb-2" size={32} />
                   <span className="text-white text-xs font-bold uppercase tracking-wider">Update Logo</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={onFileChange} />
+                  <input type="file" className="hidden" accept="image/*" onChange={onFileChange} disabled={!isEditing} />
                 </label>
               </div>
               <p className="text-xs text-center text-gray-400 font-medium px-4 leading-relaxed">Recommended for event collateral: 512x512px SVG or PNG.</p>
             </div>
           </div>
         </div>
-
+ 
         <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl overflow-hidden">
           <div className="p-8 md:p-12">
             <h3 className="text-2xl font-bold text-gray-900 mb-8">Manageable Specifications</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-
+ 
               {/* Render Read-Only Fields */}
               {READONLY_FIELDS.map((key) => {
                 const value = profile[key];
@@ -308,11 +310,11 @@ export default function FranchisorDashboard() {
                 return (
                   <div key={key}>
                     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">{label} <span className="text-[9px] text-red-500">(Non-editable)</span></label>
-                    <input type="text" value={value || ''} disabled className="block w-full px-5 py-4 bg-gray-100/50 border-2 border-transparent rounded-2xl text-gray-500 cursor-not-allowed font-semibold" />
+                    <input type="text" value={value || ''} disabled className="block w-full px-5 py-4 bg-gray-100/50 border-2 border-gray-200 rounded-2xl text-gray-500 cursor-not-allowed font-semibold" />
                   </div>
                 );
               })}
-
+ 
               {/* Render Editable Fields */}
               {MANAGEABLE_FIELDS.map((key) => {
                 if (key === 'logo') return null; // We handle logo outside of the generic grid
@@ -323,9 +325,9 @@ export default function FranchisorDashboard() {
                   <div key={key} className={isTextArea ? 'md:col-span-2' : ''}>
                     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">{label}</label>
                     {isTextArea ? (
-                      <textarea value={value || ''} onChange={(e) => handleChange(key, e.target.value)} rows={5} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 resize-none font-medium leading-relaxed" placeholder={`Enter ${label.toLowerCase()}`} />
+                      <textarea value={value || ''} onChange={(e) => handleChange(key, e.target.value)} rows={5} disabled={!isEditing} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 resize-none font-medium leading-relaxed disabled:opacity-70 disabled:cursor-not-allowed" placeholder={`Enter ${label.toLowerCase()}`} />
                     ) : key === 'industry' ? (
-                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none">
+                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} disabled={!isEditing} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none disabled:opacity-70 disabled:cursor-not-allowed">
                         <option value="">Select an industry</option>
                         {Object.keys(PRODUCT_CATEGORIES_BY_INDUSTRY).map(ind => (
                           <option key={ind} value={ind}>{ind}</option>
@@ -335,7 +337,7 @@ export default function FranchisorDashboard() {
                         )}
                       </select>
                     ) : key === 'location_type' ? (
-                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none">
+                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} disabled={!isEditing} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none disabled:opacity-70 disabled:cursor-not-allowed">
                         <option value="">Select location type</option>
                         {['Mall', 'High Street', 'Kiosk', 'Commercial Complex', 'Other'].map(loc => (
                           <option key={loc} value={loc}>{loc}</option>
@@ -345,7 +347,7 @@ export default function FranchisorDashboard() {
                         )}
                       </select>
                     ) : key === 'product_category' ? (
-                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} disabled={!profile.industry} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} disabled={!isEditing || !profile.industry} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">{profile.industry ? 'Select a category' : 'Select Industry First'}</option>
                         {(PRODUCT_CATEGORIES_BY_INDUSTRY[profile.industry] || []).map(cat => (
                           <option key={cat} value={cat}>{cat}</option>
@@ -355,16 +357,16 @@ export default function FranchisorDashboard() {
                         )}
                       </select>
                     ) : key === 'founded_year' ? (
-                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none">
+                      <select value={value || ''} onChange={(e) => handleChange(key, e.target.value)} disabled={!isEditing} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold appearance-none disabled:opacity-70 disabled:cursor-not-allowed">
                         <option value="">Select year</option>
                         {Array.from({ length: 75 }, (_, i) => new Date().getFullYear() - i).map(y => (
                           <option key={y} value={y}>{y}</option>
                         ))}
                       </select>
                     ) : key === 'investment_required' ? (
-                      <div className="flex items-center gap-1 sm:gap-2 w-full px-4 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl focus-within:bg-white focus-within:ring-4 focus-within:ring-red-500/10 focus-within:border-red-500 transition-all duration-300 overflow-hidden">
+                      <div className="flex items-center gap-1 sm:gap-2 w-full px-4 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl focus-within:bg-white focus-within:ring-4 focus-within:ring-red-500/10 focus-within:border-red-500 transition-all duration-300 overflow-hidden">
                         <span className="text-gray-500 font-bold shrink-0">₹</span>
-                        <input type="number" placeholder="10" className="min-w-0 w-8 sm:w-12 bg-transparent outline-none text-gray-900 font-semibold no-spinners"
+                        <input type="number" placeholder="10" disabled={!isEditing} className="min-w-0 w-8 sm:w-12 bg-transparent outline-none text-gray-900 font-semibold no-spinners disabled:opacity-70"
                           onChange={(e) => {
                             const currentParts = (value || '₹0 Lakh - ₹0 Lakh').split(' - ');
                             const minUnit = currentParts[0]?.match(/(K|Lakh|Crore)/i)?.[0] || 'Lakh';
@@ -372,7 +374,7 @@ export default function FranchisorDashboard() {
                           }}
                           value={(value || '').split(' - ')[0]?.match(/₹?([\d.]+)/)?.[1] || ''}
                         />
-                        <select className="bg-transparent outline-none text-gray-600 font-semibold appearance-none cursor-pointer shrink-0"
+                        <select disabled={!isEditing} className="bg-transparent outline-none text-gray-600 font-semibold appearance-none cursor-pointer shrink-0 disabled:opacity-70"
                           onChange={(e) => {
                             const currentParts = (value || '₹0 Lakh - ₹0 Lakh').split(' - ');
                             const minNum = currentParts[0]?.match(/₹?([\d.]+)/)?.[1] || '0';
@@ -384,7 +386,7 @@ export default function FranchisorDashboard() {
                         </select>
                         <span className="text-gray-400 font-black shrink-0 px-0.5">-</span>
                         <span className="text-gray-500 font-bold shrink-0">₹</span>
-                        <input type="number" placeholder="50" className="min-w-0 w-8 sm:w-12 bg-transparent outline-none text-gray-900 font-semibold no-spinners"
+                        <input type="number" placeholder="50" disabled={!isEditing} className="min-w-0 w-8 sm:w-12 bg-transparent outline-none text-gray-900 font-semibold no-spinners disabled:opacity-70"
                           onChange={(e) => {
                             const currentParts = (value || '₹0 Lakh - ₹0 Lakh').split(' - ');
                             const maxUnit = currentParts[1]?.match(/(K|Lakh|Crore)/i)?.[0] || 'Lakh';
@@ -392,7 +394,7 @@ export default function FranchisorDashboard() {
                           }}
                           value={(value || '').split(' - ')[1]?.match(/₹?([\d.]+)/)?.[1] || ''}
                         />
-                        <select className="bg-transparent outline-none text-gray-600 font-semibold appearance-none cursor-pointer shrink-0"
+                        <select disabled={!isEditing} className="bg-transparent outline-none text-gray-600 font-semibold appearance-none cursor-pointer shrink-0 disabled:opacity-70"
                           onChange={(e) => {
                             const currentParts = (value || '₹0 Lakh - ₹0 Lakh').split(' - ');
                             const maxNum = currentParts[1]?.match(/₹?([\d.]+)/)?.[1] || '0';
@@ -404,19 +406,19 @@ export default function FranchisorDashboard() {
                         </select>
                       </div>
                     ) : key === 'roi' ? (
-                      <div className="flex items-center gap-2 w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl focus-within:bg-white focus-within:ring-4 focus-within:ring-red-500/10 focus-within:border-red-500 transition-all duration-300">
-                        <input type="text" value={value || ''} onChange={(e) => handleChange(key, e.target.value)} className="bg-transparent outline-none text-gray-900 font-semibold flex-grow no-spinners" placeholder="e.g. 12-18 months" />
+                      <div className="flex items-center gap-2 w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl focus-within:bg-white focus-within:ring-4 focus-within:ring-red-500/10 focus-within:border-red-500 transition-all duration-300">
+                        <input type="text" value={value || ''} disabled={!isEditing} onChange={(e) => handleChange(key, e.target.value)} className="bg-transparent outline-none text-gray-900 font-semibold flex-grow no-spinners disabled:opacity-70" placeholder="e.g. 12-18 months" />
                       </div>
                     ) : key === 'training_support' || key === 'setup_support' || key === 'marketing_support' ? (
-                      <label className={`flex items-center justify-between p-5 mt-1 rounded-2xl border-2 transition-colors cursor-pointer ${value ? 'bg-red-50 border-red-200' : 'bg-gray-50/50 border-transparent hover:border-gray-200'}`}>
+                      <label className={`flex items-center justify-between p-5 mt-1 rounded-2xl border-2 transition-colors ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed'} ${value ? 'bg-red-50 border-red-200' : 'bg-gray-50/50 border-gray-200 hover:border-gray-300'}`}>
                         <span className={`text-sm font-bold ${value ? 'text-red-900' : 'text-gray-600'}`}>{value ? 'Provided' : 'Not Provided'}</span>
                         <div className={`w-12 h-6 rounded-full relative transition-colors ${value ? 'bg-red-500' : 'bg-gray-300'}`}>
                           <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${value ? 'left-7' : 'left-1'}`}></div>
                         </div>
-                        <input type="checkbox" checked={!!value} onChange={(e) => setProfile(prev => ({ ...prev, [key]: e.target.checked }))} className="hidden" />
+                        <input type="checkbox" checked={!!value} disabled={!isEditing} onChange={(e) => setProfile(prev => ({ ...prev, [key]: e.target.checked }))} className="hidden" />
                       </label>
                     ) : (
-                      <input type={key.includes('email') ? 'email' : key.includes('number') || key === 'units_operating' ? 'number' : 'text'} value={value || ''} onChange={(e) => handleChange(key, e.target.value)} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-transparent rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold no-spinners" placeholder={`Enter ${label.toLowerCase()}`} />
+                      <input type={key.includes('email') ? 'email' : key.includes('number') || key === 'units_operating' ? 'number' : 'text'} value={value || ''} disabled={!isEditing} onChange={(e) => handleChange(key, e.target.value)} className="block w-full px-5 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 font-semibold no-spinners disabled:opacity-70 disabled:cursor-not-allowed" placeholder={`Enter ${label.toLowerCase()}`} />
                     )}
                   </div>
                 );
@@ -424,23 +426,109 @@ export default function FranchisorDashboard() {
             </div>
           </div>
           <div className="px-8 md:px-12 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end">
-            <button type="submit" disabled={saving} className="flex items-center gap-3 px-10 py-4 bg-red-600 text-white font-black rounded-2xl shadow-xl shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-1 transition-all active:scale-[0.98] disabled:opacity-50 disabled:hover:translate-y-0 uppercase tracking-widest text-sm">{saving ? <RefreshCw size={20} className="animate-spin" /> : <Save size={20} />}{saving ? 'Synchronizing...' : 'Save Configuration'}</button>
+            <button
+              type="button"
+              onClick={
+                isEditing
+                  ? () => handleSave()
+                  : () => {
+                      setIsEditing(true);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+              }
+              disabled={saving}
+              className={`flex items-center gap-3 px-10 py-4 font-black rounded-2xl shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:hover:translate-y-0 uppercase tracking-widest text-sm text-white ${
+                isEditing
+                  ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20 hover:shadow-red-500/40'
+                  : 'bg-red-600 hover:bg-red-700 shadow-red-500/20 hover:shadow-red-500/40'
+              }`}
+            >
+              {saving ? (
+                <RefreshCw size={20} className="animate-spin" />
+              ) : isEditing ? (
+                <Save size={20} />
+              ) : (
+                <Briefcase size={20} />
+              )}
+              {saving
+                ? "Synchronizing..."
+                : isEditing
+                  ? "Save Configuration"
+                  : "Edit Profile"}
+            </button>
           </div>
         </div>
       </form>
 
-      {showCropper && imageSrc && (
-        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl relative">
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center"><h3 className="text-2xl font-bold text-gray-900">Crop Logo</h3><button onClick={() => setShowCropper(false)} className="p-3 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button></div>
-            <div className="relative h-[400px] bg-gray-900"><Cropper image={imageSrc} crop={crop} zoom={zoom} aspect={1} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} /></div>
-            <div className="p-8 space-y-8">
-              <div className="space-y-4"><div className="flex justify-between text-sm font-bold text-gray-500 uppercase"><span>Zoom</span><span>{Math.round(zoom * 100)}%</span></div><input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-red-600" /></div>
-              <div className="flex gap-4"><button onClick={() => setShowCropper(false)} className="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl">CANCEL</button><button onClick={handleCropSave} className="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl uppercase tracking-widest">Apply</button></div>
+      {showCropper && imageSrc ? (
+        <div className="fixed inset-0 z-[100] bg-transparent backdrop-blur-sm flex items-start justify-center p-6 pt-24">
+          <div className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] relative animate-in slide-in-from-top-8 duration-500">
+            <div className="p-7 border-b border-gray-50 flex justify-between items-center text-gray-900 font-bold">
+              <h3 className="text-xl font-black tracking-tight uppercase">
+                Sync Brand Visual
+              </h3>
+              <button
+                onClick={() => setShowCropper(false)}
+                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="relative h-[320px] bg-gray-950">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                style={{
+                  containerStyle: { background: '#09090b' },
+                  cropAreaStyle: { 
+                    border: '2px solid rgba(255,255,255,0.5)', 
+                    boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
+                    borderRadius: '2.5rem'
+                  }
+                }}
+              />
+            </div>
+            <div className="p-7 space-y-8">
+              <div className="space-y-4">
+                <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <span>Zoom Scale</span>
+                  <span className="px-2 py-0.5 bg-red-50 text-red-700 rounded-full">{Math.round(zoom * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-red-600"
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCropper(false)}
+                  className="flex-1 py-4 bg-gray-50 text-gray-500 font-black rounded-2xl text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCropSave}
+                  className="flex-1 py-4 bg-red-600 text-white font-black rounded-2xl text-xs uppercase tracking-widest hover:bg-red-700 transition-all hover:shadow-lg shadow-red-600/20"
+                >
+                  Apply Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

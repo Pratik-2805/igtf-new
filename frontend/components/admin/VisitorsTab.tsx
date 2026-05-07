@@ -165,6 +165,14 @@ export default function VisitorsTab({
     );
   });
 
+  const getEventName = (v: VisitorRegistration) => {
+    if (v.event_name && v.event_name !== "IGTF") return v.event_name;
+    const matched = (events || []).find(
+      (e) => e.location && e.location.toLowerCase() === (v.event_location || "").toLowerCase()
+    );
+    return matched ? matched.title : (v.event_name || "IGTF");
+  };
+
   return (
     <div>
       {/* Stats Section */}
@@ -301,7 +309,7 @@ export default function VisitorsTab({
                       Event Details
                     </p>
                     <p className="font-medium">
-                      {visitor.event_name || "IGTF"} {visitor.event_location ? `(${visitor.event_location})` : ""}
+                      {getEventName(visitor)} {visitor.event_location ? `(${visitor.event_location})` : ""}
                     </p>
                   </div>
                   {visitor.investment_budget && (

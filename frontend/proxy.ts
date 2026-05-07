@@ -19,8 +19,12 @@ function isMaintenanceAllowed(path: string) {
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  // ⭐ Only bypass the *frontend route* /logout
+  // ⭐ Always bypass auth for /logout and /login — user must see login form
   if (path === "/logout" || path === "/logout/") {
+    return NextResponse.next();
+  }
+  // ⭐ /login must ALWAYS show the form — never auto-redirect based on stale cookies
+  if (path === "/login" || path === "/login/") {
     return NextResponse.next();
   }
 
@@ -116,9 +120,7 @@ async function handleProtectedAuth(
     }
   }
 
-  if (path === "/login" && user) {
-    return redirect(req, routeForRole(user.role));
-  }
+  // /login is handled above — no redirect needed here
 
   return res;
 }

@@ -30,31 +30,19 @@ export default async function Page() {
 
   try {
     const NFIS_PLATFORMS = 'nfis,NFIS,nfis.in';
-    const [franchisorRes, exhibitorRes] = await Promise.all([
-      fetch(`${API_URL}/api/franchisor-registrations/?source_platform=${NFIS_PLATFORMS}`, {
-        next: { revalidate: 30 }
-      }),
-      fetch(`${API_URL}/api/exhibitor-registrations/?source_platform=${NFIS_PLATFORMS}`, {
-        next: { revalidate: 30 }
-      })
-    ]);
+    const franchisorRes = await fetch(`${API_URL}/api/franchisor-registrations/?source_platform=${NFIS_PLATFORMS}`, {
+      next: { revalidate: 30 }
+    });
 
     let franchisors: any[] = [];
-    let exhibitors: any[] = [];
 
     if (franchisorRes.ok) {
       const data = await franchisorRes.json();
       franchisors = data.results || data;
     }
 
-    if (exhibitorRes.ok) {
-      const data = await exhibitorRes.json();
-      exhibitors = data.results || data;
-    }
-
     const allItems = [
-      ...franchisors.map(f => ({ ...f, _type: 'franchisor' })),
-      ...exhibitors.map(e => ({ ...e, _type: 'exhibitor' }))
+      ...franchisors.map(f => ({ ...f, _type: 'franchisor' }))
     ];
 
     initialFranchises = allItems

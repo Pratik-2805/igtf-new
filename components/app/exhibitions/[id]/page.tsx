@@ -60,6 +60,7 @@ export default async function ExhibitionDetailsPage({ params }: Props) {
     return notFound();
   }
 
+  const isDateSet = event.start_date && !event.start_date.startsWith('2099');
   const formattedStartDate = event.start_date
     ? new Date(event.start_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : 'TBA';
@@ -98,7 +99,7 @@ export default async function ExhibitionDetailsPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-4 text-gray-200 text-sm sm:text-base font-medium">
             <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-gray-100/10">
               <Calendar size={18} className="text-red-500" />
-              <span>{formattedStartDate} - {formattedEndDate}</span>
+              <span>{isDateSet ? `${formattedStartDate} - ${formattedEndDate}` : "Dates will be announced soon"}</span>
             </div>
             {(event.location || event.venue) && (
               <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-gray-100/10">
@@ -106,12 +107,7 @@ export default async function ExhibitionDetailsPage({ params }: Props) {
                 <span>{event.location} {event.venue && `— ${event.venue}`}</span>
               </div>
             )}
-            {event.is_active && (
-              <div className="flex items-center gap-2 bg-red-600/90 backdrop-blur-md px-4 py-2 rounded-full text-white shadow-xl shadow-red-900/50">
-                <Zap size={16} className="fill-white" />
-                <span>Trending Now</span>
-              </div>
-            )}
+
           </div>
         </div>
       </section>

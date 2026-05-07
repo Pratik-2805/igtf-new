@@ -30,27 +30,17 @@ export default function Home({
       setLoadingFranchises(true);
       const NFIS_PLATFORMS = 'nfis,NFIS,nfis.in,manual,MANUAL';
       try {
-        const [franchisorRes, exhibitorRes] = await Promise.all([
-          fetch(`${API_URL}/api/franchisor-registrations/?source_platform=${NFIS_PLATFORMS}`),
-          fetch(`${API_URL}/api/exhibitor-registrations/?source_platform=${NFIS_PLATFORMS}`)
-        ]);
+        const franchisorRes = await fetch(`${API_URL}/api/franchisor-registrations/?source_platform=${NFIS_PLATFORMS}`);
 
         let franchisors: any[] = [];
-        let exhibitors: any[] = [];
 
         if (franchisorRes.ok) {
           const data = await franchisorRes.json();
           franchisors = data.results || data;
         }
 
-        if (exhibitorRes.ok) {
-          const data = await exhibitorRes.json();
-          exhibitors = data.results || data;
-        }
-
         const allItems = [
-          ...franchisors.map(f => ({ ...f, _type: 'franchisor' })),
-          ...exhibitors.map(e => ({ ...e, _type: 'exhibitor' }))
+          ...franchisors.map(f => ({ ...f, _type: 'franchisor' }))
         ];
 
         const mapped: Franchise[] = allItems
@@ -450,9 +440,15 @@ export default function Home({
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/register?type=franchisor"
-              className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105"
+              className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-md"
             >
               Register as Franchisor
+            </Link>
+            <Link
+              href="/register?type=visitor"
+              className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+            >
+              Register as Visitor
             </Link>
             <Link
               href="/register?type=investor"

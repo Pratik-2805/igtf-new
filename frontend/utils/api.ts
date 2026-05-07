@@ -56,6 +56,10 @@ export interface ExhibitorRegistration {
   event_location: string;
   stall_number?: string;
   event_name?: string;
+  industry?: string;
+  investment_required?: string;
+  roi?: string;
+  units_operating?: number;
   status: "pending" | "contacted" | "paid" | "rejected";
   source_platform: string;
   api_source: string;
@@ -111,6 +115,16 @@ export interface FranchisorRegistration {
   email_address: string;
   contact_number: string;
   industry?: string;
+  product_category?: string;
+  franchise_fee?: string;
+  royalty?: string;
+  space_requirement?: string;
+  location_type?: string;
+  break_even?: string;
+  cities?: string;
+  training_support?: string | boolean;
+  setup_support?: string | boolean;
+  marketing_support?: string | boolean;
   founded_year?: number;
   units_operating?: number;
   investment_required?: string;

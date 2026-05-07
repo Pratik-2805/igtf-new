@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import RegisterPage from './ClientRegister';
 import { Metadata } from 'next';
+import LoadingScreen from '@/components/loading-screen';
 
 export const metadata: Metadata = {
   title: 'Register | Join the National Franchise Investment Summit',
@@ -8,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <RegisterPage />;
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <RegisterPage />
+    </Suspense>
+  );
 }
+
