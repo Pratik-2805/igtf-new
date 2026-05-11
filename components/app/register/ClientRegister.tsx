@@ -368,6 +368,25 @@ function FranchiseeRegistration({ onBack }: { onBack: () => void }) {
     };
     fetchEventsAndBrands();
   }, []);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (eventsList.length > 0) {
+      const eventParam = searchParams?.get("event");
+      if (eventParam) {
+        const matchedEvent = eventsList.find(
+          (ev) => ev.title?.toLowerCase() === eventParam.toLowerCase()
+        );
+        if (matchedEvent) {
+          setFormData((prev) => ({
+            ...prev,
+            event_name: matchedEvent.title,
+            event_location: matchedEvent.location || "N/A",
+          }));
+        }
+      }
+    }
+  }, [eventsList, searchParams]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

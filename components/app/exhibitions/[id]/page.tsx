@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Calendar, MapPin, Users, Store, Globe, Clock, ChevronRight, Zap, Target } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -59,6 +60,9 @@ export default async function ExhibitionDetailsPage({ params }: Props) {
   if (!event) {
     return notFound();
   }
+
+  const cookieStore = await cookies();
+  const isLoggedIn = !!cookieStore.get('access_token')?.value;
 
   const isDateSet = event.start_date && !event.start_date.startsWith('2099');
   const formattedStartDate = event.start_date
@@ -181,21 +185,23 @@ export default async function ExhibitionDetailsPage({ params }: Props) {
               </div>
 
               {event.is_active ? (
-                <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-6 shadow-lg shadow-red-900/20 text-white text-center">
-                  <h3 className="text-2xl font-bold mb-2">Secure Your Spot</h3>
-                  <p className="text-red-100 text-sm mb-6">
-                    Connect with serious investors and top brands. Register today.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <Link href="/register" className="block w-full py-3 px-4 bg-white text-red-700 font-bold rounded-xl hover:bg-gray-50 transform transition-all active:scale-95 shadow-md">
-                      Book Exhibition Booth
-                    </Link>
-                    <Link href="/register" className="block w-full py-3 px-4 bg-white/10 border border-red-200/30 text-white font-bold rounded-xl hover:bg-white/20 transform transition-all active:scale-95">
-                      Register as Visitor
-                    </Link>
+                !isLoggedIn && (
+                  <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-6 shadow-lg shadow-red-900/20 text-white text-center">
+                    <h3 className="text-2xl font-bold mb-2">Secure Your Spot</h3>
+                    <p className="text-red-100 text-sm mb-6">
+                      Connect with serious investors and top brands. Register today.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <Link href="/register" className="block w-full py-3 px-4 bg-white text-red-700 font-bold rounded-xl hover:bg-gray-50 transform transition-all active:scale-95 shadow-md">
+                        Book Exhibition Booth
+                      </Link>
+                      <Link href={`/register?type=visitor&event=${encodeURIComponent(event.title)}`} className="block w-full py-3 px-4 bg-white/10 border border-red-200/30 text-white font-bold rounded-xl hover:bg-white/20 transform transition-all active:scale-95">
+                        Register as Visitor
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                )
               ) : (
                 <div className="bg-gray-800 rounded-2xl p-6 shadow-md text-center text-white">
                   <h3 className="text-2xl font-bold mb-2">Event Concluded</h3>

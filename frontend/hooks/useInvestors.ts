@@ -139,12 +139,13 @@ export function useInvestors(enabled: boolean) {
         setIsUpdating(false);
       }
     },
-    convertToExhibitor: async (investor: InvestorRegistration) => {
+    convertToExhibitor: async (investor: InvestorRegistration, stallNumber?: string) => {
       try {
         setIsUpdating(true);
         const res = await authFetch(`${INVESTORS_URL}${investor.id}/convert_to_exhibitor/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stall_number: stallNumber || "" }),
         });
 
         if (!res.ok) {

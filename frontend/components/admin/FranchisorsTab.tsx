@@ -28,8 +28,23 @@ interface FranchisorsTabProps {
   events?: Event[];
   deleteFranchisor?: (id: number) => void;
   updateEventDetails?: (id: number, eventName: string, eventLocation: string, extraData?: { interested_sector?: string }) => void;
-  convertToExhibitor?: (franchisor: FranchisorRegistration) => void;
+  convertToExhibitor?: (franchisor: FranchisorRegistration, stallNumber?: string) => void;
 }
+
+const pavilionCategories: Record<string, string> = {
+  A1: "Education & Training",
+  A2: "Business Services",
+  A3: "Automobile & EV",
+  A4: "Kids & Entertainment",
+  A5: "Food & QSR",
+  A6: "Home Services & Real Estate Allied",
+  A7: "Ecosystem/ Support Services",
+  A8: "Health, Fitness & Wellness",
+  A9: "Finance & Banking",
+  A10: "Global Pavilion",
+  A11: "Hospitality & Stay",
+  A12: "Retail & Lifestyle",
+};
 
 export default function FranchisorsTab({
   franchisors,
@@ -72,6 +87,13 @@ export default function FranchisorsTab({
     isOpen: false,
     franchisor: null,
   });
+
+  const [convertModal, setConvertModal] = useState<{ isOpen: boolean; franchisor: FranchisorRegistration | null }>({
+    isOpen: false,
+    franchisor: null,
+  });
+
+  const [stallNumberInput, setStallNumberInput] = useState("");
 
   const submitEventModal = () => {
     if (eventModal.id && updateEventDetails) {
@@ -398,9 +420,8 @@ export default function FranchisorsTab({
                        {franchisor.status === "paid" && (
                          <button
                           onClick={() => {
-                            if (window.confirm(`Are you sure you want to convert ${franchisor.company_name} to an Exhibitor?`)) {
-                              convertToExhibitor?.(franchisor);
-                            }
+                            setStallNumberInput("");
+                            setConvertModal({ isOpen: true, franchisor });
                           }}
                           className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-xs font-bold transition-all"
                         >
@@ -641,6 +662,69 @@ export default function FranchisorsTab({
                   className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors shadow-sm"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Convert to Exhibitor Confirmation Modal */}
+      {convertModal.isOpen && convertModal.franchisor && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+          <div className="bg-background border border-border w-full max-w-sm rounded-2xl shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-5">
+                <svg className="w-7 h-7 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </div>
+              <h3 className="font-serif text-xl font-bold mb-2">Convert to Exhibitor</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Are you sure you want to convert <span className="font-bold text-foreground">{convertModal.franchisor.company_name}</span> to an Exhibitor? This will assign them an exhibitor profile.
+              </p>
+
+              <div className="mb-6 text-left">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                  Floor Plan Slot / Stall (Optional)
+                </label>
+                <select
+                  value={stallNumberInput}
+                  onChange={(e) => setStallNumberInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-muted/40 border border-border rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-background outline-none transition text-sm font-semibold"
+                >
+                  <option value="">Select a Slot (Optional)</option>
+                  {Object.entries(pavilionCategories).map(([id, name]) => (
+                    <optgroup key={id} label={`${id} - ${name}`}>
+                      <option value={id}>{id} (Premium Anchor)</option>
+                      {Array.from({ length: 8 }, (_, i) => {
+                        const stall = `${id}-S${i + 1}`;
+                        return (
+                          <option key={stall} value={stall}>
+                            {stall} (Standard)
+                          </option>
+                        );
+                      })}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setConvertModal({ isOpen: false, franchisor: null })}
+                  className="flex-1 px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-xl font-semibold transition-colors border border-border"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    if (convertToExhibitor) convertToExhibitor(convertModal.franchisor!, stallNumberInput);
+                    setConvertModal({ isOpen: false, franchisor: null });
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-colors shadow-sm"
+                >
+                  Convert
                 </button>
               </div>
             </div>

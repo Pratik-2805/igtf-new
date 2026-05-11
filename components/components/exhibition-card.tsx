@@ -10,11 +10,14 @@ interface ExhibitionCardProps {
 }
 
 export function ExhibitionCard({ exhibition }: ExhibitionCardProps) {
-  const formattedDate = new Date(exhibition.date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const isDateTBA = !exhibition.date || exhibition.date.startsWith('2099') || new Date(exhibition.date).getFullYear() === 2099;
+  const formattedDate = isDateTBA
+    ? 'Dates will be announced soon'
+    : new Date(exhibition.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
 
   const internalUrl = `/exhibitions/${exhibition.id}`;
 

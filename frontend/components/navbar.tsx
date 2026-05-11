@@ -2,12 +2,16 @@
 
 import type React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import { LayoutDashboard, LogOut, ChevronDown, User } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { user, isAuthenticated, logout: authLogout } = useAuth();
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [pressProgress, setPressProgress] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -126,30 +130,90 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Button or User Profile Dropdown */}
             <div className="hidden md:block relative">
-              <button
-                className="
-    relative 
-    px-6 py-2 
-    rounded-md 
-    font-medium 
-    text-background 
-    transition-all 
-    duration-500 
-    overflow-hidden
-    bg-gradient-to-r 
-    from-[oklch(0.35_0.07_250)] 
-    via-[oklch(0.75_0.12_75)] 
-    to-[oklch(0.35_0.07_250)]
-    bg-[length:200%_200%]
-    animate-gradient-move
-  "
-                onClick={() => setModalOpen(true)}
-                onMouseEnter={() => setModalOpen(true)}
-              >
-                Register Now
-              </button>
+              {isAuthenticated && user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-3 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-full transition-all cursor-pointer border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                      {user.username.substring(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-foreground max-w-[120px] truncate">
+                      {user.username}
+                    </span>
+                    <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-300 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {userDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setUserDropdownOpen(false)} />
+                      <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-2xl p-2 z-40 animate-in fade-in slide-in-from-top-4 duration-300 text-left">
+                        <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 mb-1">
+                          <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">Logged In As</p>
+                          <p className="text-sm font-black text-foreground truncate">{user.email}</p>
+                          <span className="inline-block mt-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary/10 text-primary">
+                            {user.role || 'Member'}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            if (user.role === 'admin') router.push('/admin');
+                            else if (user.role === 'manager') router.push('/manager');
+                            else if (user.role === 'sales') router.push('/sales');
+                            else if (user.role === 'investor') router.push('/dashboard/investor');
+                            else if (user.role === 'franchisor') router.push('/dashboard/franchisor');
+                            else router.push('/');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-foreground/80 hover:text-foreground hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-xl transition-all cursor-pointer"
+                        >
+                          <LayoutDashboard size={18} />
+                          Go to Console
+                        </button>
+
+                        <button
+                          onClick={async () => {
+                            setUserDropdownOpen(false);
+                            await authLogout();
+                            router.push('/');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
+                        >
+                          <LogOut size={18} />
+                          Sign Out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <button
+                  className="
+      relative 
+      px-6 py-2 
+      rounded-md 
+      font-medium 
+      text-background 
+      transition-all 
+      duration-500 
+      overflow-hidden
+      bg-gradient-to-r 
+      from-[oklch(0.35_0.07_250)] 
+      via-[oklch(0.75_0.12_75)] 
+      to-[oklch(0.35_0.07_250)]
+      bg-[length:200%_200%]
+      animate-gradient-move
+    "
+                  onClick={() => setModalOpen(true)}
+                  onMouseEnter={() => setModalOpen(true)}
+                >
+                  Register Now
+                </button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -201,15 +265,46 @@ export function Navbar() {
                     {link.label}
                   </a>
                 ))}
-                <button
-                  className="w-full bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary/90 transition-all duration-500 font-medium"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setModalOpen(true);
-                  }}
-                >
-                  Register Now
-                </button>
+                {isAuthenticated && user ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (user.role === 'admin') router.push('/admin');
+                        else if (user.role === 'manager') router.push('/manager');
+                        else if (user.role === 'sales') router.push('/sales');
+                        else if (user.role === 'investor') router.push('/dashboard/investor');
+                        else if (user.role === 'franchisor') router.push('/dashboard/franchisor');
+                        else router.push('/');
+                      }}
+                      className="w-full flex items-center justify-center gap-3 bg-neutral-100 dark:bg-neutral-800 text-foreground px-6 py-3 rounded-md font-medium cursor-pointer"
+                    >
+                      <LayoutDashboard size={18} />
+                      Go to Console
+                    </button>
+                    <button
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        await authLogout();
+                        router.push('/');
+                      }}
+                      className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-500 px-6 py-3 rounded-md font-medium cursor-pointer"
+                    >
+                      <LogOut size={18} />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="w-full bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary/90 transition-all duration-500 font-medium"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setModalOpen(true);
+                    }}
+                  >
+                    Register Now
+                  </button>
+                )}
               </div>
             </div>
           )}

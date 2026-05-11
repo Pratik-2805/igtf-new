@@ -132,12 +132,13 @@ export function useFranchisors(enabled: boolean) {
     },
     stats,
     refetch: fetchFranchisors,
-    convertToExhibitor: async (franchisor: FranchisorRegistration) => {
+    convertToExhibitor: async (franchisor: FranchisorRegistration, stallNumber?: string) => {
       try {
         setIsUpdating(true);
         const res = await authFetch(`${FRANCHISORS_URL}${franchisor.id}/convert_to_exhibitor/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stall_number: stallNumber || "" }),
         });
 
         if (!res.ok) {

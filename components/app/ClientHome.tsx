@@ -22,6 +22,21 @@ export default function Home({
   const [loadingFranchises, setLoadingFranchises] = useState(false);
   const [apiExhibitions, setApiExhibitions] = useState<any[]>(initialExhibitions);
   const [loadingExhibitions, setLoadingExhibitions] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkLogin = () => {
+      const token = localStorage.getItem('access_token');
+      setIsLoggedIn(!!token);
+    };
+    checkLogin();
+    window.addEventListener('auth-change', checkLogin);
+    window.addEventListener('storage', checkLogin);
+    return () => {
+      window.removeEventListener('auth-change', checkLogin);
+      window.removeEventListener('storage', checkLogin);
+    };
+  }, []);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -219,9 +234,15 @@ export default function Home({
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-8 min-h-[400px]">
+          <div className={`grid gap-8 mb-8 min-h-[400px] ${
+            featuredFranchises.length === 1
+              ? "max-w-md mx-auto grid-cols-1"
+              : featuredFranchises.length === 2
+                ? "max-w-4xl mx-auto md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-3"
+          }`}>
             {loadingFranchises ? (
-              <div className="col-span-3 flex flex-col items-center justify-center py-20">
+              <div className="col-span-full flex flex-col items-center justify-center py-20">
                 <RefreshCw className="animate-spin text-red-600 mb-4" size={40} />
                 <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Accessing Franchise Network...</p>
               </div>
@@ -230,7 +251,7 @@ export default function Home({
                 <FranchiseCard key={franchise.id} franchise={franchise} />
               ))
             ) : (
-              <div className="col-span-3 text-center py-20">
+              <div className="col-span-full text-center py-20">
                 <p className="text-gray-500">Currently Onboarding. Please visit after sometime.</p>
               </div>
             )}
@@ -425,40 +446,42 @@ export default function Home({
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-700 via-blue-600 to-red-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-            Ready to Transform Your Franchise Journey?
-          </h2>
-          <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto text-balance">
-            Join thousands of entrepreneurs, franchisors, and investors at the National Franchise India Summit.
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Link
-              href="/register?type=franchisor"
-              className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-md"
-            >
-              Register as Franchisor
-            </Link>
-            <Link
-              href="/register?type=visitor"
-              className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
-            >
-              Register as Visitor
-            </Link>
-            <Link
-              href="/register?type=investor"
-              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-all duration-200"
-            >
-              Register as Investor
-            </Link>
+      {!isLoggedIn && (
+        <section className="py-20 bg-gradient-to-br from-blue-700 via-blue-600 to-red-600 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
           </div>
-        </div>
-      </section>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
+              Ready to Transform Your Franchise Journey?
+            </h2>
+            <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto text-balance">
+              Join thousands of entrepreneurs, franchisors, and investors at the National Franchise India Summit.
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Link
+                href="/register?type=franchisor"
+                className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-md"
+              >
+                Register as Franchisor
+              </Link>
+              <Link
+                href="/register?type=visitor"
+                className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+              >
+                Register as Visitor
+              </Link>
+              <Link
+                href="/register?type=investor"
+                className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-all duration-200"
+              >
+                Register as Investor
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

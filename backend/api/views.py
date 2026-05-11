@@ -1230,6 +1230,7 @@ class InvestorRegistrationViewSet(RegistrationCreateMixin, viewsets.ModelViewSet
             status="contacted",
             source_platform=investor.source_platform,
             logo=investor.logo,
+            stall_number=request.data.get('stall_number', ''),
         )
         
         return Response({"detail": "Investor copied to exhibitor successfully", "exhibitor_id": exhibitor.id}, status=status.HTTP_200_OK)
@@ -1312,6 +1313,7 @@ class FranchisorRegistrationViewSet(RegistrationCreateMixin, viewsets.ModelViewS
             status="contacted",
             source_platform=franchisor.source_platform,
             logo=franchisor.logo,
+            stall_number=request.data.get('stall_number', ''),
         )
         
         return Response({"detail": "Franchisor copied to exhibitor successfully", "exhibitor_id": exhibitor.id}, status=status.HTTP_200_OK)
